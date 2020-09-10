@@ -1,0 +1,92 @@
+version: '3'
+
+networks: 
+    laravel:
+
+services: 
+    nginx:
+        image: nginx:alpine
+        container_name: nginx
+        ports: 
+            - "80:80"
+        volumes: 
+            - ${BASE_PATH}/src:/var/www/html
+            - ${BASE_PATH}/docker/nginx/conf.d:/etc/nginx/conf.d
+            - ${BASE_PATH}/docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+        depends_on: 
+            - php
+            - mysql
+        networks: 
+            - laravel
+
+    mysql:
+        image: mysql:5.7
+        container_name: mysql
+        command: --innodb-use-native-aio=0
+        restart: unless-stopped
+        tty: true
+        ports: 
+            - "3306:3306"
+        volumes: 
+            - ${BASE_PATH}/docker/mysql:/var/lib/mysql
+        environment: 
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        networks: 
+            - laravel
+
+    adminer:
+        image: adminer
+        container_name: adminer
+        restart: always
+        ports:
+            - "8080:8080"
+        networks: 
+            - laravel
+
+
+    redis:
+        image: redis:alpine
+        container_name: redis
+        tty: true
+        command: redis-server /usr/local/etc/redis/redis.conf
+        ports:
+            - "6379:6379"
+        volumes: 
+            - ${BASE_PATH}/docker/redis/data:/data
+            - ${BASE_PATH}/docker/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf
+        networks: 
+            - laravel
+
+    php:
+        build: 
+            context: ./docker/php
+            dockerfile: Dockerfile
+        tty: true
+        container_name: php
+        volumes: 
+            - ${BASE_PATH}/src:/var/www/html
+            - ${BASE_PATH}/docker/php/ini:/usr/local/etc/php/conf.d
+        ports: 
+            - "9000:9000"
+        networks: 
+            - laravel
+
+    minio:
+        image: minio/minio
+        container_name: minio
+        command: server /data
+        tty: true
+        ports: 
+            - "9090:9000"
+        volumes: 
+            - ${BASE_PATH}/docker/minio:/data
+        environment: 
+            MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+            MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+        networks: 
+            - laravel

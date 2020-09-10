@@ -1,0 +1,14 @@
+.env
+.idea
+
+docker/mysql/*
+!docker/mysql/.gitkeep
+
+docker/minio/*
+!docker/minio/.gitkeep
+
+docker/redis/data/bases/*
+!docker/redis/data/bases/.gitkeep
+docker/redis/data/log/*
+!docker/redis/data/log/.gitkeep
+docker/redis/data/*.*
