@@ -62,7 +62,7 @@ class Sender
     }
 
     public static function AuthenticationException($request, $exception) {
-        return Response::error('Unauthenticated. Proceed to '.route('login').' for authentication', 'UNAUTHORIZED');
+        return Response::error('Unauthenticated. Proceed to '.route('api.auth.login').' for authentication', 'UNAUTHORIZED');
     }
 
     public static function OAuthServerException($request, $exception) {
